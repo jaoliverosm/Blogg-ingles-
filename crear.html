@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear entrada · Blog Inglés II</title>
+  <meta name="description" content="Publica una entrada nueva en el blog de Inglés II — Universidad del Tolima.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600&display=swap" rel="stylesheet">
+  <!-- Editor de texto enriquecido (Quill) -->
+  <link href="https://cdn.quilljs.com/2.0.3/quill.snow.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    /* Aplica el tema guardado antes de pintar (evita parpadeo) */
+    if (localStorage.getItem('tema') === 'dark' ||
+        (!localStorage.getItem('tema') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+</head>
+<body class="pagina-crear">
+
+  <!-- ===== Encabezado común ===== -->
+  <header class="header">
+    <div class="contenedor header-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-logo">📖</span>
+        <span class="brand-texto">
+          <strong>Blog Inglés II</strong>
+          <small>Universidad del Tolima</small>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Navegación principal">
+        <button id="btn-tema" class="boton boton-icono" type="button" title="Cambiar tema claro u oscuro" aria-label="Cambiar tema claro u oscuro">🌙</button>
+        <a id="btn-nueva-entrada" class="boton boton-primario" href="crear.html" style="display:none">＋ Nueva entrada</a>
+        <button id="btn-logout" class="boton boton-secundario" type="button" style="display:none">Cerrar sesión</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="contenedor">
+      <div class="encabezado-pagina">
+        <h1>Crear nueva entrada</h1>
+        <!-- app.js muestra aquí con qué cuenta se está publicando -->
+        <p id="info-sesion" class="subtitulo"></p>
+      </div>
+
+      <!--
+        Esta tarjeta está oculta mientras app.js verifica la sesión.
+        Si no hay sesión activa, app.js redirige a login.html.
+      -->
+      <div id="tarjeta-crear" class="tarjeta-formulario tarjeta-formulario--ancha" style="visibility:hidden">
+        <form id="form-publicar" class="formulario" novalidate>
+          <div class="campo">
+            <label for="titulo">Título</label>
+            <input type="text" id="titulo" maxlength="120" autocomplete="off"
+                   placeholder="Ej.: Cómo usamos el pasado simple esta semana">
+          </div>
+
+          <div class="campo">
+            <label>Contenido</label>
+            <!-- Editor de texto enriquecido (estilo Google Docs): lo crea app.js -->
+            <div id="editor-contenido"></div>
+          </div>
+
+          <div class="campo">
+            <label for="imagen">Imagen de portada (opcional — aparece arriba de la entrada)</label>
+            <input type="url" id="imagen" placeholder="https://ejemplo.com/imagen.jpg">
+            <img id="preview-imagen" alt="Vista previa de la imagen" hidden>
+          </div>
+
+          <div class="campo">
+            <label for="video">URL de video de YouTube (opcional)</label>
+            <input type="url" id="video" placeholder="https://www.youtube.com/watch?v=...">
+          </div>
+
+          <button type="submit" class="boton boton-primario boton-bloque">🚀 Publicar entrada</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== Pie de página ===== -->
+  <footer class="footer">
+    <div class="contenedor">
+      <p>Blog académico · Inglés II · Universidad del Tolima</p>
+      <p class="footer-nota"><a href="index.html">← Volver al blog</a></p>
+    </div>
+  </footer>
+
+  <!-- Editor de texto enriquecido (Quill) -->
+  <script src="https://cdn.quilljs.com/2.0.3/quill.js"></script>
+  <!-- SDK de Firebase (compat, sin build). Puedes subir la versión. -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <!-- Configuración con tus credenciales -->
+  <script src="firebase-config.js"></script>
+  <!-- Lógica del sitio -->
+  <script src="app.js"></script>
+</body>
+</html>

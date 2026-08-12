@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Inglés II · Universidad del Tolima</title>
+  <meta name="description" content="Blog académico colaborativo de la materia Inglés II — Universidad del Tolima.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600&display=swap" rel="stylesheet">
+  <!-- Estilos para mostrar el contenido formateado de las entradas (Quill) -->
+  <link href="https://cdn.quilljs.com/2.0.3/quill.snow.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    /* Aplica el tema guardado antes de pintar (evita parpadeo) */
+    if (localStorage.getItem('tema') === 'dark' ||
+        (!localStorage.getItem('tema') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+</head>
+<body class="pagina-index">
+
+  <!-- ===== Encabezado común ===== -->
+  <header class="header">
+    <div class="contenedor header-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-logo">📖</span>
+        <span class="brand-texto">
+          <strong>Blog Inglés II</strong>
+          <small>Universidad del Tolima</small>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Navegación principal">
+        <button id="btn-tema" class="boton boton-icono" type="button" title="Cambiar tema claro u oscuro" aria-label="Cambiar tema claro u oscuro">🌙</button>
+        <a id="btn-nueva-entrada" class="boton boton-primario" href="crear.html" style="display:none">＋ Nueva entrada</a>
+        <button id="btn-logout" class="boton boton-secundario" type="button" style="display:none">Cerrar sesión</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===== Portada ===== -->
+    <section class="hero">
+      <div class="contenedor">
+        <p class="hero-etiqueta">Blog colaborativo · Inglés II</p>
+        <h1>Nuestras entradas de clase</h1>
+        <p class="hero-descripcion">
+          Dos publicaciones por semana sobre lo que vemos en clase:
+          pasado simple, tiempos perfectos, futuro, verbos modales y condicionales.
+        </p>
+        <!-- Aquí app.js pone el botón "Escribir entrada" o "Iniciar sesión" según la sesión -->
+        <div id="cta-publicar" class="hero-cta"></div>
+        <p id="contador" class="hero-contador" hidden></p>
+      </div>
+    </section>
+
+    <!-- ===== Entradas ===== -->
+    <section class="contenedor seccion-entradas">
+      <div id="estado-carga" class="estado-carga" role="status">Cargando entradas…</div>
+      <div id="lista-entradas" class="lista-entradas"></div>
+      <!-- Botón para ver más entradas (lo controla app.js) -->
+      <div class="cargar-mas-wrap">
+        <button type="button" id="btn-mas" class="boton boton-secundario" hidden>Cargar más entradas ↓</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Modal: artículo completo (lo abre app.js al hacer clic en una tarjeta) ===== -->
+  <div id="modal-articulo" class="modal" hidden>
+    <div class="modal-fondo" id="modal-fondo"></div>
+    <div class="modal-contenedor" role="dialog" aria-modal="true" aria-label="Artículo completo">
+      <div class="modal-barra">
+        <span class="modal-etiqueta">Artículo completo</span>
+        <button type="button" class="boton boton-icono modal-cerrar" id="modal-cerrar" aria-label="Cerrar artículo">✕</button>
+      </div>
+      <article class="modal-articulo" id="modal-articulo-contenido"></article>
+    </div>
+  </div>
+
+  <!-- ===== Pie de página ===== -->
+  <footer class="footer">
+    <div class="contenedor">
+      <p>Blog académico · Inglés II · Universidad del Tolima</p>
+      <p class="footer-nota">¿Eres del grupo? <a href="crear.html">Inicia sesión y publica tu entrada</a>.</p>
+    </div>
+  </footer>
+
+  <!-- SDK de Firebase (compat, sin build). Puedes subir la versión. -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <!-- Configuración con tus credenciales -->
+  <script src="firebase-config.js"></script>
+  <!-- Lógica del sitio -->
+  <script src="app.js"></script>
+</body>
+</html>
