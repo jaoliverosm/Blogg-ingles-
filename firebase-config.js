@@ -1,22 +1,17 @@
 /* ============================================================
    firebase-config.js — Configuración de Firebase
    ------------------------------------------------------------
-   Reemplaza TODOS los valores de abajo con las credenciales de
-   tu proyecto. Las encuentras en:
-   Firebase Console → Configuración del proyecto (engranaje) →
-   Tus apps → ícono Web (</>) → copia el objeto firebaseConfig.
-
-   Este archivo se carga DESPUÉS del SDK de Firebase y ANTES
-   de app.js. No cambies la estructura, solo los valores.
+   Credenciales del proyecto "BLOG-INGLES" (blog-ingles-947b8).
+   Si algún día cambias de proyecto, reemplaza solo los valores.
    ============================================================ */
 
 const firebaseConfig = {
-  apiKey: "PON_AQUI_TU_API_KEY",
-  authDomain: "PON_AQUI_TU_PROYECTO.firebaseapp.com",
-  projectId: "PON_AQUI_TU_PROYECTO",
-  storageBucket: "PON_AQUI_TU_PROYECTO.appspot.com",
-  messagingSenderId: "PON_AQUI_TU_MESSAGING_SENDER_ID",
-  appId: "PON_AQUI_TU_APP_ID"
+  apiKey: "AIzaSyBh7OhTi-3fuS2t-Tb8WEN-RSaEIQxfkrA",
+  authDomain: "blog-ingles-947b8.firebaseapp.com",
+  projectId: "blog-ingles-947b8",
+  storageBucket: "blog-ingles-947b8.firebasestorage.app",
+  messagingSenderId: "911407579461",
+  appId: "1:911407579461:web:826e749f12c32ad9a37e2c"
 };
 
 // Inicializa Firebase (la condición evita errores si el script
