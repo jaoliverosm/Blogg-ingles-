@@ -47,10 +47,10 @@ function escapeHtml(texto) {
 
 // Convierte "juan.perez@correo.com" → "Juan Perez" (nombre visible)
 function nombreDesdeEmail(email) {
-  if (!email) return 'Anónimo';
+  if (!email) return 'Anonymous';
   const local = email.split('@')[0];
   const nombre = local.replace(/[._-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()).trim();
-  return nombre || 'Anónimo';
+  return nombre || 'Anonymous';
 }
 
 // Primera letra del nombre, para el avatar circular
@@ -66,29 +66,29 @@ function obtenerIdYouTube(url) {
   return match ? match[1] : null;
 }
 
-// Formatea la fecha de Firestore a texto en español
+// Formatea la fecha de Firestore a texto legible
 function formatearFecha(fecha) {
-  if (!fecha) return 'Sin fecha';
+  if (!fecha) return 'No date';
   try {
     const d = fecha.toDate ? fecha.toDate() : new Date(fecha);
-    return d.toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' });
+    return d.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
   } catch (e) {
-    return 'Sin fecha';
+    return 'No date';
   }
 }
 
 // Traduce los errores de autenticación a mensajes entendibles
 function mensajeErrorAuth(codigo) {
   const mensajes = {
-    'auth/invalid-email': 'El correo no tiene un formato válido.',
-    'auth/user-not-found': 'No existe una cuenta con ese correo.',
-    'auth/wrong-password': 'La contraseña es incorrecta.',
-    'auth/invalid-credential': 'El correo o la contraseña son incorrectos.',
-    'auth/user-disabled': 'Esta cuenta está deshabilitada.',
-    'auth/too-many-requests': 'Demasiados intentos fallidos. Espera un momento y vuelve a intentarlo.',
-    'auth/network-request-failed': 'Error de conexión. Revisa tu internet y vuelve a intentarlo.'
+    'auth/invalid-email': 'The email is not in a valid format.',
+    'auth/user-not-found': 'There is no account with that email.',
+    'auth/wrong-password': 'The password is incorrect.',
+    'auth/invalid-credential': 'The email or password is incorrect.',
+    'auth/user-disabled': 'This account has been disabled.',
+    'auth/too-many-requests': 'Too many failed attempts. Wait a moment and try again.',
+    'auth/network-request-failed': 'Connection error. Check your internet and try again.'
   };
-  return mensajes[codigo] || 'No se pudo iniciar sesión. Inténtalo de nuevo.';
+  return mensajes[codigo] || 'Could not log in. Try again.';
 }
 
 /* ============================================================
@@ -121,8 +121,8 @@ function actualizarInterfazSesion(user) {
   const cta = $('#cta-publicar');
   if (cta) {
     cta.innerHTML = user
-      ? '<a class="boton boton-primario" href="crear.html">✏️ Escribir una entrada</a>'
-      : '<a class="boton boton-primario" href="login.html">Iniciar sesión para publicar</a>';
+      ? '<a class="boton boton-primario" href="crear.html">✏️ Write a post</a>'
+      : '<a class="boton boton-primario" href="login.html">Log in to publish</a>';
   }
 }
 
@@ -156,13 +156,13 @@ function initLogin(user) {
 
     // Validación rápida en el navegador
     if (!email || !contrasena) {
-      error.textContent = 'Escribe tu correo y tu contraseña.';
+      error.textContent = 'Enter your email and password.';
       error.hidden = false;
       return;
     }
 
     boton.disabled = true;
-    boton.textContent = 'Ingresando…';
+    boton.textContent = 'Signing in…';
     error.hidden = true;
 
     try {
@@ -172,7 +172,7 @@ function initLogin(user) {
       error.textContent = mensajeErrorAuth(err.code);
       error.hidden = false;
       boton.disabled = false;
-      boton.textContent = 'Iniciar sesión';
+      boton.textContent = 'Log in';
     }
   });
 }
@@ -188,7 +188,7 @@ let editorContenido = null;
 // Barra de herramientas del editor (estilo procesador de texto)
 const OPCIONES_EDITOR = {
   theme: 'snow',
-  placeholder: 'Escribe aquí tu entrada… Puedes poner imágenes en el texto con el botón de imagen 🖼',
+  placeholder: 'Write your post here… You can add images in the text with the image button 🖼',
   modules: {
     // container = botones de la barra; handlers = comportamiento personalizado
     toolbar: {
@@ -207,7 +207,7 @@ const OPCIONES_EDITOR = {
         // El botón de imagen pide una URL y la inserta justo donde
         // está el cursor, dentro del texto (sin subir archivos a ningún lado).
         image: function () {
-          const url = prompt('Pega la URL de la imagen o GIF:');
+          const url = prompt('Paste the image or GIF URL:');
           if (!url || !url.trim()) return;
           const indice = this.quill.getSelection(true).index;
           this.quill.insertEmbed(indice, 'image', url.trim(), 'user');
@@ -238,8 +238,8 @@ function initCrear(user) {
   const infoSesion = $('#info-sesion');
   if (infoSesion) {
     infoSesion.textContent = user
-      ? `Publicando como: ${user.email}`
-      : 'Vista previa del formulario — inicia sesión para publicar de verdad.';
+      ? `Publishing as: ${user.email}`
+      : 'Form preview — log in to actually publish.';
   }
 
   // Crear el editor de texto enriquecido (solo la primera vez)
@@ -273,7 +273,7 @@ function initCrear(user) {
 async function publicarEntrada(user) {
   // Sin sesión (modo vista previa) no se puede publicar
   if (!user) {
-    alert('Estás en modo vista previa. Inicia sesión para publicar.');
+    alert('You are in preview mode. Log in to publish.');
     return;
   }
 
@@ -286,17 +286,17 @@ async function publicarEntrada(user) {
 
   // Validaciones con mensajes claros
   if (titulo.length < 3) {
-    alert('Escribe un título de al menos 3 caracteres.');
+    alert('Write a title of at least 3 characters.');
     return;
   }
   if (contenido.length < 10) {
-    alert('Escribe un contenido de al menos 10 caracteres.');
+    alert('Write a content of at least 10 characters.');
     return;
   }
 
   const boton = $('#form-publicar').querySelector('button[type="submit"]');
   boton.disabled = true;
-  boton.textContent = 'Publicando…';
+  boton.textContent = 'Publishing…';
 
   try {
     // Guardar la entrada en Firestore
@@ -315,9 +315,9 @@ async function publicarEntrada(user) {
     location.href = 'index.html';
   } catch (error) {
     console.error('Error al publicar:', error);
-    alert('Ocurrió un error al publicar la entrada. Revisa tu conexión e inténtalo de nuevo.');
+    alert('An error occurred while publishing your post. Check your connection and try again.');
     boton.disabled = false;
-    boton.textContent = 'Publicar entrada';
+    boton.textContent = 'Publish post';
   }
 }
 
@@ -332,7 +332,7 @@ function abrirArticulo(d) {
   const modal = $('#modal-articulo');
   if (!modal) return;
 
-  const autor = d.autor || d.autorEmail || 'Anónimo';
+  const autor = d.autor || d.autorEmail || 'Anonymous';
   const contenido = $('#modal-articulo-contenido');
   contenido.innerHTML = `
     <h2 class="articulo-titulo">${escapeHtml(d.titulo)}</h2>
@@ -343,10 +343,10 @@ function abrirArticulo(d) {
       <time>${escapeHtml(formatearFecha(d.fecha))}</time>
     </div>
     ${d.imagenURL
-      ? `<img class="articulo-imagen" src="${escapeHtml(d.imagenURL)}" alt="Imagen de: ${escapeHtml(d.titulo)}">`
+      ? `<img class="articulo-imagen" src="${escapeHtml(d.imagenURL)}" alt="Image of: ${escapeHtml(d.titulo)}">`
       : ''}
     ${obtenerIdYouTube(d.videoURL)
-      ? `<div class="articulo-video"><iframe src="https://www.youtube.com/embed/${obtenerIdYouTube(d.videoURL)}" title="Video de: ${escapeHtml(d.titulo)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`
+      ? `<div class="articulo-video"><iframe src="https://www.youtube.com/embed/${obtenerIdYouTube(d.videoURL)}" title="Video of: ${escapeHtml(d.titulo)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`
       : ''}
     <div class="ql-editor articulo-contenido">${d.contenidoHTML || escapeHtml(d.contenido || '')}</div>
   `;
@@ -405,7 +405,7 @@ function initIndex(user) {
     if (entradasCargadas.length === 0) {
       const vacio = document.createElement('p');
       vacio.className = 'estado-vacio';
-      vacio.textContent = 'Todavía no hay entradas. ¡Inicia sesión y publica la primera!';
+      vacio.textContent = 'No posts yet. Log in and publish the first one!';
       lista.appendChild(vacio);
       if (btnMas) btnMas.hidden = true;
       return;
@@ -428,8 +428,8 @@ function initIndex(user) {
     if (contador) {
       contador.hidden = false;
       contador.textContent = docs.length === 1
-        ? '1 entrada publicada'
-        : `${docs.length} entradas publicadas`;
+        ? '1 post published'
+        : `${docs.length} posts published`;
     }
     pintarEntradas();
   }
@@ -448,7 +448,7 @@ function initIndex(user) {
         console.error('Error al leer entradas:', error);
         if (estado) {
           estado.hidden = false;
-          estado.textContent = 'No se pudieron cargar las entradas. Recarga la página e inténtalo de nuevo.';
+          estado.textContent = 'Could not load posts. Reload the page and try again.';
         }
       }
     );
@@ -479,11 +479,11 @@ function videoHTML(d) {
 // miniatura del video de YouTube, o un marcador de color.
 function miniaturaHTML(d) {
   if (d.imagenURL) {
-    return `<img class="tarjeta-miniatura" src="${escapeHtml(d.imagenURL)}" alt="Miniatura de: ${escapeHtml(d.titulo)}" loading="lazy">`;
+    return `<img class="tarjeta-miniatura" src="${escapeHtml(d.imagenURL)}" alt="Thumbnail of: ${escapeHtml(d.titulo)}" loading="lazy">`;
   }
   const id = obtenerIdYouTube(d.videoURL);
   if (id) {
-    return `<img class="tarjeta-miniatura" src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="Miniatura del video de: ${escapeHtml(d.titulo)}" loading="lazy">`;
+    return `<img class="tarjeta-miniatura" src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="Video thumbnail of: ${escapeHtml(d.titulo)}" loading="lazy">`;
   }
   return `<div class="tarjeta-miniatura tarjeta-miniatura--vacia">📖</div>`;
 }
@@ -495,9 +495,9 @@ function miniaturaHTML(d) {
 // Al hacer clic en cualquier tarjeta se abre el artículo completo.
 function crearTarjeta(doc, tipo) {
   const d = doc.data();
-  const autor = d.autor || d.autorEmail || 'Anónimo';
+  const autor = d.autor || d.autorEmail || 'Anonymous';
   const contenido = `<div class="ql-editor tarjeta-contenido">${d.contenidoHTML || escapeHtml(d.contenido || '')}</div>`;
-  const leer = '<span class="tarjeta-leer">Leer artículo →</span>';
+  const leer = '<span class="tarjeta-leer">Read full article →</span>';
 
   const tarjeta = document.createElement('article');
 
@@ -506,7 +506,7 @@ function crearTarjeta(doc, tipo) {
     tarjeta.innerHTML = `
       <h2 class="tarjeta-titulo">${escapeHtml(d.titulo)}</h2>
       ${metaHTML(d, autor)}
-      ${d.imagenURL ? `<img class="tarjeta-imagen" src="${escapeHtml(d.imagenURL)}" alt="Imagen de: ${escapeHtml(d.titulo)}" loading="lazy">` : ''}
+      ${d.imagenURL ? `<img class="tarjeta-imagen" src="${escapeHtml(d.imagenURL)}" alt="Image of: ${escapeHtml(d.titulo)}" loading="lazy">` : ''}
       ${videoHTML(d)}
       ${contenido}
       ${leer}
@@ -527,7 +527,7 @@ function crearTarjeta(doc, tipo) {
     tarjeta.innerHTML = `
       <h2 class="tarjeta-titulo">${escapeHtml(d.titulo)}</h2>
       ${metaHTML(d, autor)}
-      ${d.imagenURL ? `<img class="tarjeta-imagen" src="${escapeHtml(d.imagenURL)}" alt="Imagen de: ${escapeHtml(d.titulo)}" loading="lazy">` : ''}
+      ${d.imagenURL ? `<img class="tarjeta-imagen" src="${escapeHtml(d.imagenURL)}" alt="Image of: ${escapeHtml(d.titulo)}" loading="lazy">` : ''}
       ${videoHTML(d)}
       ${contenido}
       ${leer}

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crear entrada · Blog Inglés II</title>
-  <meta name="description" content="Publica una entrada nueva en el blog de Inglés II — Universidad del Tolima.">
+  <title>Create post · English II Blog</title>
+  <meta name="description" content="Publish a new post on the English II blog — Universidad del Tolima.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,14 +28,14 @@
       <a class="brand" href="index.html">
         <span class="brand-logo">📖</span>
         <span class="brand-texto">
-          <strong>Blog Inglés II</strong>
+          <strong>English II Blog</strong>
           <small>Universidad del Tolima</small>
         </span>
       </a>
-      <nav class="nav" aria-label="Navegación principal">
-        <button id="btn-tema" class="boton boton-icono" type="button" title="Cambiar tema claro u oscuro" aria-label="Cambiar tema claro u oscuro">🌙</button>
-        <a id="btn-nueva-entrada" class="boton boton-primario" href="crear.html" style="display:none">＋ Nueva entrada</a>
-        <button id="btn-logout" class="boton boton-secundario" type="button" style="display:none">Cerrar sesión</button>
+      <nav class="nav" aria-label="Main navigation">
+        <button id="btn-tema" class="boton boton-icono" type="button" title="Toggle light/dark theme" aria-label="Toggle light/dark theme">🌙</button>
+        <a id="btn-nueva-entrada" class="boton boton-primario" href="crear.html" style="display:none">＋ New post</a>
+        <button id="btn-logout" class="boton boton-secundario" type="button" style="display:none">Sign out</button>
       </nav>
     </div>
   </header>
@@ -43,8 +43,8 @@
   <main>
     <div class="contenedor">
       <div class="encabezado-pagina">
-        <h1>Crear nueva entrada</h1>
-        <!-- app.js muestra aquí con qué cuenta se está publicando -->
+        <h1>Create new post</h1>
+        <!-- app.js shows here which account is publishing -->
         <p id="info-sesion" class="subtitulo"></p>
       </div>
 
@@ -55,29 +55,29 @@
       <div id="tarjeta-crear" class="tarjeta-formulario tarjeta-formulario--ancha" style="visibility:hidden">
         <form id="form-publicar" class="formulario" novalidate>
           <div class="campo">
-            <label for="titulo">Título</label>
+            <label for="titulo">Title</label>
             <input type="text" id="titulo" maxlength="120" autocomplete="off"
-                   placeholder="Ej.: Cómo usamos el pasado simple esta semana">
+                   placeholder="E.g.: How we used the simple past this week">
           </div>
 
           <div class="campo">
-            <label>Contenido</label>
-            <!-- Editor de texto enriquecido (estilo Google Docs): lo crea app.js -->
+            <label>Content</label>
+            <!-- Rich text editor (Google Docs style): created by app.js -->
             <div id="editor-contenido"></div>
           </div>
 
           <div class="campo">
-            <label for="imagen">Imagen de portada (opcional — aparece arriba de la entrada)</label>
-            <input type="url" id="imagen" placeholder="https://ejemplo.com/imagen.jpg">
-            <img id="preview-imagen" alt="Vista previa de la imagen" hidden>
+            <label for="imagen">Cover image (optional — appears at the top of the post)</label>
+            <input type="url" id="imagen" placeholder="https://example.com/image.jpg">
+            <img id="preview-imagen" alt="Image preview" hidden>
           </div>
 
           <div class="campo">
-            <label for="video">URL de video de YouTube (opcional)</label>
+            <label for="video">YouTube video URL (optional)</label>
             <input type="url" id="video" placeholder="https://www.youtube.com/watch?v=...">
           </div>
 
-          <button type="submit" class="boton boton-primario boton-bloque">🚀 Publicar entrada</button>
+          <button type="submit" class="boton boton-primario boton-bloque">🚀 Publish post</button>
         </form>
       </div>
     </div>
@@ -86,8 +86,8 @@
   <!-- ===== Pie de página ===== -->
   <footer class="footer">
     <div class="contenedor">
-      <p>Blog académico · Inglés II · Universidad del Tolima</p>
-      <p class="footer-nota"><a href="index.html">← Volver al blog</a></p>
+      <p>Academic blog · English II · Universidad del Tolima</p>
+      <p class="footer-nota"><a href="index.html">← Back to the blog</a></p>
     </div>
   </footer>
 
