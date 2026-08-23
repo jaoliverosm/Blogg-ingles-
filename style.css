@@ -685,6 +685,24 @@ html.dark .ql-snow .ql-picker-options { background: var(--superficie); }
 html.dark .ql-snow .ql-picker-label { color: var(--texto); }
 html.dark .ql-snow .ql-tooltip { background: var(--superficie); color: var(--texto); border-color: var(--borde); }
 
+/* ---------- Botones de acción en el modal ---------- */
+.articulo-acciones {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.boton-peligro {
+  background: transparent;
+  color: var(--peligro);
+  border: 1px solid var(--peligro);
+}
+.boton-peligro:hover {
+  background: var(--peligro-fondo);
+}
+
 /* ---------- Pie de página ---------- */
 .footer {
   border-top: 1px solid var(--borde);

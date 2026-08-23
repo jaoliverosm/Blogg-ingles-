@@ -14,6 +14,7 @@
 /* ---------------- Atajos y referencias ---------------- */
 const $ = (selector) => document.querySelector(selector);
 const db = firebase.firestore();    // referencia a la base de datos Firestore
+let currentUser = null;  // usuario actual (se actualiza en onAuthStateChanged)
 
 /* ============================================================
    1) TEMA CLARO / OSCURO
@@ -97,7 +98,12 @@ function mensajeErrorAuth(codigo) {
 
 // Se ejecuta cada vez que cambia el estado de sesión
 // (al cargar la página y al iniciar/cerrar sesión).
+// La primera vez que dispara confirma si hay sesión o no;
+// necesitamos saberlo antes de actuar (evita redirect
+// incorrecto a login.html cuando Firebase aún está cargando).
+let authListo = false;
 firebase.auth().onAuthStateChanged((user) => {
+  currentUser = user;  // guardar referencia global del usuario
   actualizarInterfazSesion(user);
 
   // Según la página en la que estemos, arrancamos su lógica:
@@ -108,6 +114,9 @@ firebase.auth().onAuthStateChanged((user) => {
   } else if ($('#lista-entradas')) { // → index.html
     initIndex(user);
   }
+
+  // Marcar que la primera verificación de sesión ya terminó
+  if (!authListo) authListo = true;
 });
 
 // Muestra u oculta los botones del encabezado según la sesión
@@ -218,17 +227,28 @@ const OPCIONES_EDITOR = {
   }
 };
 
+let crearInicializado = false; // evita agregar listeners múltiples veces
+let editandoDocId = null; // ID del documento en modo edición (null = crear nuevo)
+
 function initCrear(user) {
   // Modo vista previa: al abrir crear.html?preview=1 se muestra el
   // formulario sin sesión (útil para ver el diseño). No se puede
   // publicar de verdad, porque Firestore rechaza escrituras sin sesión.
-  const modoPreview = new URLSearchParams(location.search).has('preview');
+  const params = new URLSearchParams(location.search);
+  const modoPreview = params.has('preview');
+  editandoDocId = params.get('edit') || null; // modo edición
 
-  // Página protegida: sin sesión activa → redirigir al login
-  if (!user && !modoPreview) {
+  // Página protegida: sin sesión activa → redirigir al login.
+  // Solo redirigimos DESPUÉS de que authListo es true (ya sabemos
+  // si hay sesión de verdad, no es un falso negativo de carga).
+  if (!user && !modoPreview && authListo) {
     location.replace('login.html');
     return;
   }
+
+  // Si ya inicializamos antes, no volvemos a agregar listeners
+  if (crearInicializado) return;
+  crearInicializado = true;
 
   // Mostrar el formulario (estaba oculto mientras se verificaba la sesión)
   const tarjeta = $('#tarjeta-crear');
@@ -261,6 +281,11 @@ function initCrear(user) {
     preview.onerror = () => { preview.hidden = true; };
   });
 
+  // Si es modo edición, cargar los datos del documento
+  if (editandoDocId) {
+    cargarEntradaParaEditar(editandoDocId);
+  }
+
   // Enviar la entrada
   const form = $('#form-publicar');
   form.addEventListener('submit', (event) => {
@@ -269,7 +294,57 @@ function initCrear(user) {
   });
 }
 
-// Guarda la entrada en Firestore (sin subir nada a Storage)
+// Carga una entrada existente en el formulario para editarla
+async function cargarEntradaParaEditar(docId) {
+  const boton = $('#form-publicar').querySelector('button[type="submit"]');
+  
+  try {
+    const doc = await db.collection('entradas').doc(docId).get();
+    if (!doc.exists) {
+      alert('This post does not exist.');
+      location.href = 'index.html';
+      return;
+    }
+
+    const datos = doc.data();
+
+    // Verificar que el usuario actual sea el autor
+    if (currentUser && currentUser.email !== datos.autorEmail) {
+      alert('You can only edit your own posts.');
+      location.href = 'index.html';
+      return;
+    }
+
+    // Llenar el formulario con los datos existentes
+    $('#titulo').value = datos.titulo || '';
+    $('#imagen').value = datos.imagenURL || '';
+    $('#video').value = datos.videoURL || '';
+
+    // Poner el contenido en el editor Quill
+    if (editorContenido && datos.contenidoHTML) {
+      editorContenido.root.innerHTML = datos.contenidoHTML;
+    }
+
+    // Mostrar preview de imagen si hay URL
+    if (datos.imagenURL) {
+      const preview = $('#preview-imagen');
+      preview.src = datos.imagenURL;
+      preview.hidden = false;
+    }
+
+    // Cambiar título y botón para indicar modo edición
+    const tituloPagina = document.querySelector('.encabezado-pagina h1');
+    if (tituloPagina) tituloPagina.textContent = 'Edit post';
+    if (boton) boton.textContent = '💾 Save changes';
+
+  } catch (error) {
+    console.error('Error loading post:', error);
+    alert('Could not load the post. Try again.');
+    location.href = 'index.html';
+  }
+}
+
+// Guarda la entrada en Firestore (crear nueva o actualizar existente)
 async function publicarEntrada(user) {
   // Sin sesión (modo vista previa) no se puede publicar
   if (!user) {
@@ -295,29 +370,40 @@ async function publicarEntrada(user) {
   }
 
   const boton = $('#form-publicar').querySelector('button[type="submit"]');
+  const esEdicion = !!editandoDocId;
   boton.disabled = true;
-  boton.textContent = 'Publishing…';
+  boton.textContent = esEdicion ? 'Saving…' : 'Publishing…';
 
   try {
-    // Guardar la entrada en Firestore
-    await db.collection('entradas').add({
+    const datos = {
       titulo: titulo,
       contenido: contenido,           // texto plano (respaldo / búsqueda)
       contenidoHTML: contenidoHTML,   // texto con formato (negritas, listas…)
       autor: nombreDesdeEmail(user.email), // nombre visible (ej. "Juan Perez")
       autorEmail: user.email,
-      fecha: firebase.firestore.FieldValue.serverTimestamp(),
       imagenURL: imagenURL,
       videoURL: videoURL
-    });
+    };
+
+    if (esEdicion) {
+      // Actualizar documento existente (mantener la fecha original)
+      await db.collection('entradas').doc(editandoDocId).update(datos);
+    } else {
+      // Crear documento nuevo
+      datos.fecha = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('entradas').add(datos);
+    }
 
     // Todo listo → volver al inicio
     location.href = 'index.html';
   } catch (error) {
     console.error('Error al publicar:', error);
-    alert('An error occurred while publishing your post. Check your connection and try again.');
+    const detalle = error && error.message ? error.message : 'Unknown error';
+    alert('Error: ' + detalle + '\n\nTip: if it says "permission" or "unauthenticated", log out and log in again.');
+  } finally {
+    // SIEMPRE restaurar el botón (sin importar si hubo éxito o error)
     boton.disabled = false;
-    boton.textContent = 'Publish post';
+    boton.textContent = esEdicion ? '💾 Save changes' : '🚀 Publish post';
   }
 }
 
@@ -327,13 +413,30 @@ async function publicarEntrada(user) {
 
 // ---------- Modal del artículo completo ----------
 
+// Almacena el ID del documento actualmente abierto en el modal
+let docIdActual = null;
+
 // Muestra el artículo completo en el modal (al hacer clic en una tarjeta)
-function abrirArticulo(d) {
+function abrirArticulo(d, docId) {
   const modal = $('#modal-articulo');
   if (!modal) return;
 
+  docIdActual = docId;  // guardar ID para edit/delete
+
   const autor = d.autor || d.autorEmail || 'Anonymous';
   const contenido = $('#modal-articulo-contenido');
+  
+  // Botones de acción (solo visible si el usuario es el autor)
+  let accionesHTML = '';
+  if (currentUser && currentUser.email === d.autorEmail) {
+    accionesHTML = `
+      <div class="articulo-acciones">
+        <button type="button" class="boton boton-secundario" id="btn-editar" title="Edit this post">✏️ Edit</button>
+        <button type="button" class="boton boton-peligro" id="btn-eliminar" title="Delete this post">🗑️ Delete</button>
+      </div>
+    `;
+  }
+
   contenido.innerHTML = `
     <h2 class="articulo-titulo">${escapeHtml(d.titulo)}</h2>
     <div class="tarjeta-meta">
@@ -342,6 +445,7 @@ function abrirArticulo(d) {
       <span class="tarjeta-separador" aria-hidden="true">·</span>
       <time>${escapeHtml(formatearFecha(d.fecha))}</time>
     </div>
+    ${accionesHTML}
     ${d.imagenURL
       ? `<img class="articulo-imagen" src="${escapeHtml(d.imagenURL)}" alt="Image of: ${escapeHtml(d.titulo)}">`
       : ''}
@@ -350,6 +454,21 @@ function abrirArticulo(d) {
       : ''}
     <div class="ql-editor articulo-contenido">${d.contenidoHTML || escapeHtml(d.contenido || '')}</div>
   `;
+
+  // Conectar botones de acción
+  if (accionesHTML) {
+    const btnEditar = $('#btn-editar');
+    const btnEliminar = $('#btn-eliminar');
+    if (btnEditar) {
+      btnEditar.addEventListener('click', () => {
+        cerrarArticulo();
+        location.href = `crear.html?edit=${docId}`;
+      });
+    }
+    if (btnEliminar) {
+      btnEliminar.addEventListener('click', () => eliminarEntrada(docId, d.titulo));
+    }
+  }
 
   modal.hidden = false;
   document.body.style.overflow = 'hidden'; // bloquea el scroll de fondo
@@ -372,6 +491,21 @@ function initModalArticulo() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !modal.hidden) cerrarArticulo();
   });
+}
+
+// Elimina una entrada de Firestore tras confirmar
+async function eliminarEntrada(docId, titulo) {
+  const confirmar = confirm(`Are you sure you want to delete "${titulo}"?\n\nThis action cannot be undone.`);
+  if (!confirmar) return;
+
+  try {
+    await db.collection('entradas').doc(docId).delete();
+    cerrarArticulo();
+    // La lista se actualizará automáticamente por el onSnapshot en tiempo real
+  } catch (error) {
+    console.error('Error al eliminar:', error);
+    alert('Could not delete the post. Make sure you are logged in and try again.');
+  }
 }
 
 // ---------- Paginación de la lista ----------
@@ -538,7 +672,7 @@ function crearTarjeta(doc, tipo) {
   // del contenido no disparan el modal).
   tarjeta.addEventListener('click', (e) => {
     if (e.target.closest('a')) return;
-    abrirArticulo(d);
+    abrirArticulo(d, doc.id);  // pasar el ID del documento
   });
 
   return tarjeta;
